@@ -1,6 +1,6 @@
-# ReCAPTCHA V3
+# reCAPTCHA v3
 
-Adds reCAPTCHA capability to forms
+Adds reCAPTCHA capability to Craft CMS 2 forms.
 
 ## How to use
 
