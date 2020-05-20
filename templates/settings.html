@@ -1,0 +1,19 @@
+{% from '_includes/forms' import textfield %}
+
+<h2>reCAPTCHA v3</h2>
+
+{{ textfield({
+id: 'siteKey',
+name: 'siteKey',
+value: settings['siteKey'],
+label: 'Site Key',
+size: 40
+}) }}
+
+{{ textfield({
+id: 'secretKey',
+name: 'secretKey',
+value: settings['secretKey'],
+label: 'Secret Key',
+size: 40
+}) }}
