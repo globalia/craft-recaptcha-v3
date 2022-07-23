@@ -33,6 +33,18 @@ class RecaptchaV3Service extends BaseApplicationComponent
         return $settings->attributes['secretKey'];
     }
 
+    public function hasRecaptchaKeys()
+    {
+        return ! empty($this->getSiteKey()) && ! empty($this->getSecretKey());
+    }
+
+    public function getScoreTreshold()
+    {
+        $settings = $this->getSettings();
+
+        return $settings->attributes['scoreTreshold'];
+    }
+
     public function verify($recaptchaResponse)
     {
         $base = 'https://www.google.com/recaptcha/api/siteverify';
@@ -52,7 +64,7 @@ class RecaptchaV3Service extends BaseApplicationComponent
         if ($result->getStatusCode() == 200) {
             $response = $result->json();
 
-            return $response['success'] && $response['score'] > 0.5;
+            return $response['success'] && $response['score'] >= $this->getScoreTreshold();
         } else {
             return false;
         }

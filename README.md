@@ -8,25 +8,49 @@ Adds reCAPTCHA capability to Craft CMS 2 forms.
 
 Add this code in your \<form\> :
 ```
-{% if craft.recaptchaV3.getRecaptchaSiteKey %}
-    <input type="hidden" id="g-recaptcha-response-contact-form" name="g-recaptcha-response">
+{% if craft.plugins.getPlugin('recaptchaV3', true) and craft.recaptchaV3.hasRecaptchaKeys %}
+    <input type="hidden" data-action="contact" name="g-recaptcha-response">
 {% endif %}
 ```
 
 In your \<head\> :
 ```
-{% if renderReCaptcha | default %}
+{% if craft.plugins.getPlugin('recaptchaV3', true) and renderReCaptcha | default and craft.recaptchaV3.hasRecaptchaKeys %}
     {% set reCaptchaSiteKey = craft.recaptchaV3.getRecaptchaSiteKey %}
 
     {% if reCaptchaSiteKey %}
         <script src="https://www.google.com/recaptcha/api.js?render={{ reCaptchaSiteKey }}"></script>
         <script>
-            grecaptcha.ready(function() {
-                grecaptcha.execute('{{ reCaptchaSiteKey }}', { action: 'contact' })
-                    .then(function(token) {
-                        document.getElementById('g-recaptcha-response-contact-form').value = token;
-                    });
+            document.addEventListener('DOMContentLoaded', function(event) {
+                var recaptchaResponses = document.querySelectorAll('input[name="g-recaptcha-response"]');
+
+                for (var index = 0; index < recaptchaResponses.length; index++) {
+                    var form = recaptchaResponses[index].closest('form');
+
+                    if (form !== null) {
+                        form.addEventListener('submit', getRecaptchaToken);
+                    }
+                }
             });
+
+            function getRecaptchaToken(event) {
+                event.preventDefault();
+                var form = event.target;
+
+                if (form !== null) {
+                    var recaptchaResponse = form.querySelector('input[name="g-recaptcha-response"]');
+                    var recaptchaAction = recaptchaResponse.dataset.action !== undefined ? recaptchaResponse.dataset.action : 'submit';
+
+                    if (recaptchaResponse !== null) {
+                        grecaptcha.ready(function() {
+                            grecaptcha.execute('{{ reCaptchaSiteKey }}', { action: recaptchaAction }).then(function(token) {
+                                recaptchaResponse.value = token;
+                                form.submit();
+                            });
+                        });
+                    }
+                }
+            }
         </script>
     {% endif %}
 {% endif %}
@@ -105,7 +129,7 @@ Between {% extends %} and {% block content %}
 {% from _self import errorList %}
 
 In {% block content %} :
-{% if form is defined %}
-    {{ errorList(formProject.getErrors('recaptcha')) }}
+{% if formHandle is defined %}
+    {{ errorList(formHandle.getErrors('recaptcha')) }}
 {% endif %}
 ```

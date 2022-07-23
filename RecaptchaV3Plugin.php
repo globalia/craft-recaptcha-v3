@@ -25,15 +25,14 @@ class RecaptchaV3Plugin extends BasePlugin
 
     public function init()
     {
-        if (craft()->plugins->getPlugin('amforms', true)) {
+        if (craft()->plugins->getPlugin('formerly', true)) {
             if ($reCaptchaSecretKey = craft()->recaptchaV3->getSecretKey()) {
-                craft()->on('amForms_submissions.onBeforeSaveSubmission', function (Event $event) {
+                craft()->on('formerly_submissions.onBeforePost', function (Event $event) {
                     $submission = $event->params['submission'];
-                    $form = $submission->getAttribute('form');
+                    $form = craft()->formerly_forms->getFormById($submission->formId);
 
-                    if (in_array($form->handle, ['contact-en', 'contact-fr']) && ! empty(craft()->recaptchaV3->getSecretKey())) {
+                    if (in_array($form->handle, ['contact', 'devenirFormateur', 'examen', 'rendezVous'])) {
                         if (! craft()->recaptchaV3->verify(craft()->request->getPost('g-recaptcha-response', null))) {
-                            $event->performAction = false;
                             $error = Craft::t('recaptcha.error.message');
                             $submission->addError('recaptcha', $error);
                         }
@@ -47,7 +46,8 @@ class RecaptchaV3Plugin extends BasePlugin
     {
         return array(
             'siteKey' => array(AttributeType::Mixed, 'default' => ''),
-            'secretKey' => array(AttributeType::Mixed, 'default' => '')
+            'secretKey' => array(AttributeType::Mixed, 'default' => ''),
+            'scoreTreshold' => array(AttributeType::Mixed, 'default' => '0.5'),
         );
     }
 
