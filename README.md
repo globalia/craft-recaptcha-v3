@@ -14,6 +14,8 @@ Add this code in your \<form\> :
 ```
 
 In your \<head\> :
+
+** Remove `and renderReCaptcha | default` if you want to load reCAPTCHA on all pages)
 ```
 {% if craft.plugins.getPlugin('recaptchaV3', true) and renderReCaptcha | default and craft.recaptchaV3.hasRecaptchaKeys %}
     {% set reCaptchaSiteKey = craft.recaptchaV3.getRecaptchaSiteKey %}
@@ -112,11 +114,17 @@ if (craft()->plugins->getPlugin('amforms', true)) {
 }
 ```
 
-and in your template :
-```
-Between {% extends %} and {% block content %}
-{% set renderReCaptcha = true %}
+## In your template
 
+If you want to render reCAPTCHA only in one (or more) specific template, you can set 
+a variable between {% extends %} and {% block content %}
+```
+{% set renderReCaptcha = true %}
+```
+
+You can import macro in  the template directly :
+
+```
 {% macro errorList(errors) %}
     {% if errors %}
         <ul class="errors">
@@ -127,9 +135,38 @@ Between {% extends %} and {% block content %}
     {% endif %}
 {% endmacro %}
 {% from _self import errorList %}
+```
 
-In {% block content %} :
+or create a file with all your macros and import it, as described below.
+
+Create a file _macros.twig in templates folder and paste this code :
+```
+{% macro errorList(errors) %}
+    {% if errors %}
+        <ul class="errors">
+            {% for error in errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endmacro %}
+```
+
+In your template :
+```
+{% import "_macros" as macros %}
+```
+
+In {% block content %}, copy this code where you want the reCAPTCHA error to be outputted :
+```
 {% if formHandle is defined %}
     {{ errorList(formHandle.getErrors('recaptcha')) }}
+{% endif %}
+```
+
+or if your macro is in a file and has been imported :
+```
+{% if formHandle is defined %}
+    {{ macros.errorList(formHandle.getErrors('recaptcha')) }}
 {% endif %}
 ```
