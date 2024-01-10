@@ -13,6 +13,9 @@ Add this code in your \<form\> :
 {% endif %}
 ```
 
+The `data-action="contact"` attribute will be the action sent to reCAPTCHA. It's useful to know 
+from which form the data is coming from. In this case, this is the Contact form.
+
 In your \<head\> :
 
 ** Remove `and renderReCaptcha | default` if you want to load reCAPTCHA on all pages)
